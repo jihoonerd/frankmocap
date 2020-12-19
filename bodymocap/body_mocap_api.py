@@ -5,6 +5,9 @@ import sys
 import torch
 import numpy as np
 import pickle 
+import socket
+import json
+import os
 from torchvision.transforms import Normalize
 
 from bodymocap.models import hmr, SMPL, SMPLX
@@ -13,6 +16,10 @@ from bodymocap.utils.imutils import crop, crop_bboxInfo, process_image_bbox, pro
 from mocap_utils.coordconv import convert_smpl_to_bbox, convert_bbox_to_oriIm
 import mocap_utils.geometry_utils as gu
 
+with open('../server_info.json', 'r') as f:
+    server = json.load(f)
+UDP_IP = server["UDP_IP"]
+UDP_PORT = server["UDP_PORT"]
 
 class BodyMocap(object):
     def __init__(self, regressor_checkpoint, smpl_dir, device=torch.device('cuda'), use_smplx=False):
@@ -138,7 +145,13 @@ class BodyMocap(object):
                     pred_output['left_hand_joints_img_coord'] = pred_joints_img
                 
                 pred_output_list.append(pred_output)
+                
+                udp_data = {}
+                udp_data["pred_joints_img"] = pred_output['pred_joints_img'].tolist()
 
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        jsonized_data = json.dumps(udp_data)
+        sock.sendto(jsonized_data.encode(encoding='UTF-8'), (UDP_IP, UDP_PORT))
         return pred_output_list
     
 

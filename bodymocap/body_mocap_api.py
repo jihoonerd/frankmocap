@@ -63,6 +63,10 @@ class BodyMocap(object):
                 bboxTopLeft:  bbox top left (redundant)
                 boxScale_o2n: bbox scaling factor (redundant) 
         """
+
+        # Prepare socket for communication [frankmocap] -> [Unity]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
         pred_output_list = list()
 
         for body_bbox in body_bbox_list:
@@ -147,11 +151,13 @@ class BodyMocap(object):
                 pred_output_list.append(pred_output)
                 
                 udp_data = {}
-                udp_data["pred_joints_img"] = pred_output['pred_joints_img'].tolist()
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        jsonized_data = json.dumps(udp_data)
-        sock.sendto(jsonized_data.encode(encoding='UTF-8'), (UDP_IP, UDP_PORT))
+                udp_data['pred_joints_img'] = pred_output['pred_joints_img'].tolist()
+                udp_data['pred_body_pose'] = pred_output['pred_body_pose'].tolist()
+                udp_data['pred_rotmat'] = pred_output['pred_rotmat'].tolist()
+                udp_data['pred_betas'] = pred_output['pred_betas'].tolist()
+                udp_data['pred_camera'] = pred_output['pred_camera'].tolist()
+                jsonized_data = json.dumps(udp_data)
+                sock.sendto(jsonized_data.encode(encoding='UTF-8'), (UDP_IP, UDP_PORT))
         return pred_output_list
     
 

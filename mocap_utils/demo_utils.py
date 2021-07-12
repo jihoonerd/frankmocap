@@ -233,7 +233,7 @@ def save_pred_to_pkl(
     if demo_type in ['hand', 'frank']:
         assert smpl_type == 'smplx'
 
-    assert len(hand_bbox_list) == len(body_bbox_list)
+    # assert len(hand_bbox_list) == len(body_bbox_list)
     assert len(body_bbox_list) == len(pred_output_list)
 
     saved_data = dict()
@@ -247,7 +247,7 @@ def save_pred_to_pkl(
     saved_data['save_mesh'] = args.save_mesh
 
     saved_data['pred_output_list'] = list()
-    num_subject = len(hand_bbox_list)
+    num_subject = len(body_bbox_list)
     for s_id in range(num_subject):
         # predict params
         pred_output = pred_output_list[s_id]
